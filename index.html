@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Solver</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+        .solve-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .solve-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const colors = {
+            white: '#FFFFFF',
+            red: '#FF0000',
+            blue: '#0000FF',
+            orange: '#FFA500',
+            green: '#00FF00',
+            yellow: '#FFFF00'
+        };
+
+        const CubeFace = ({ face, updateFace }) => (
+            <g>
+                {face.map((color, index) => (
+                    <rect
+                        key={index}
+                        x={(index % 3) * 33}
+                        y={Math.floor(index / 3) * 33}
+                        width="30"
+                        height="30"
+                        fill={color}
+                        stroke="black"
+                        strokeWidth="1"
+                        onClick={() => updateFace(index)}
+                    />
+                ))}
+            </g>
+        );
+
+        const RubiksCubeSolver = () => {
+            const [cube, setCube] = React.useState(Array(6).fill(Array(9).fill(colors.white)));
+            const [currentColor, setCurrentColor] = React.useState(colors.white);
+            const [solution, setSolution] = React.useState([]);
+            const [currentStep, setCurrentStep] = React.useState(0);
+
+            const updateFace = (faceIndex, squareIndex) => {
+                setCube(prevCube => prevCube.map((face, i) =>
+                    i === faceIndex
+                        ? face.map((color, j) => j === squareIndex ? currentColor : color)
+                        : face
+                ));
+            };
+
+            const solveCube = () => {
+                const steps = [
+                    "Step 1: Solve the white cross",
+                    "Step 2: Solve the white corners",
+                    "Step 3: Solve the middle layer",
+                    "Step 4: Solve the yellow cross",
+                    "Step 5: Solve the yellow edges",
+                    "Step 6: Solve the yellow corners",
+                    "Step 7: Orient the yellow corners",
+                    "COMPLETE!"
+                ];
+                setSolution(steps);
+                setCurrentStep(0);
+            };
+
+            return (
+                <div className="container">
+                    <h2>Rubik's Cube Solver</h2>
+                    <svg width="300" height="400" viewBox="0 0 300 400">
+                        <g transform="translate(100, 0)">
+                            <CubeFace face={cube[0]} updateFace={(index) => updateFace(0, index)} />
+                        </g>
+                        <g transform="translate(0, 100)">
+                            <CubeFace face={cube[1]} updateFace={(index) => updateFace(1, index)} />
+                        </g>
+                        <g transform="translate(100, 100)">
+                            <CubeFace face={cube[2]} updateFace={(index) => updateFace(2, index)} />
+                        </g>
+                        <g transform="translate(200, 100)">
+                            <CubeFace face={cube[3]} updateFace={(index) => updateFace(3, index)} />
+                        </g>
+                        <g transform="translate(100, 200)">
+                            <CubeFace face={cube[4]} updateFace={(index) => updateFace(4, index)} />
+                        </g>
+                        <g transform="translate(100, 300)">
+                            <CubeFace face={cube[5]} updateFace={(index) => updateFace(5, index)} />
+                        </g>
+                    </svg>
+                    <div>
+                        {Object.entries(colors).map(([name, color]) => (
+                            <button
+                                key={name}
+                                className="color-btn"
+                                style={{ backgroundColor: color }}
+                                onClick={() => setCurrentColor(color)}
+                            />
+                        ))}
+                    </div>
+                    <button className="solve-btn" onClick={solveCube}>Solve Cube</button>
+                    {solution.length > 0 && (
+                        <div>
+                            <h3>Solution Steps:</h3>
+                            <p>{solution[currentStep]}</p>
+                            <button 
+                                onClick={() => setCurrentStep(prev => Math.max(prev - 1, 0))}
+                                disabled={currentStep === 0}
+                            >
+                                Previous
+                            </button>
+                            <button 
+                                onClick={() => setCurrentStep(prev => Math.min(prev + 1, solution.length - 1))}
+                                disabled={currentStep === solution.length - 1}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<RubiksCubeSolver />, document.getElementById('root'));
+    </script>
+</body>
+</html>
